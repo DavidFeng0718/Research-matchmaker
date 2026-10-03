@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { makePdf } from '../fixtures/make-pdf';
 
 async function navigate(page: Page, name: RegExp) {
   const navigation = page.getByRole('navigation', { name: 'Main navigation' });
@@ -123,4 +124,24 @@ test('layout fits viewport and resume preview needs confirmation', async ({ page
   await profile.getByRole('button', { name: 'Save my starting point' }).click();
   stored = await page.evaluate(() => JSON.parse(localStorage.getItem('research-matchmaker-v1') || '{}'));
   expect(stored.profile.experience).toContain('introductory biology');
+});
+
+test('PDF resume is read on this device and used only after confirmation', async ({ page }) => {
+  const apiCalls: string[] = [];
+  page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/api/') && request.method() !== 'GET') apiCalls.push(request.url()); });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add background or resume' }).click();
+  const profile = page.getByRole('dialog', { name: 'Your starting point' });
+  const upload = profile.locator('input[type=file]');
+  await upload.setInputFiles({ name: 'scan.pdf', mimeType: 'application/pdf', buffer: Buffer.from(makePdf([[]])) });
+  await expect(profile.getByRole('alert')).toContainText('scanned image');
+  await upload.setInputFiles({ name: 'resume.pdf', mimeType: 'application/pdf', buffer: Buffer.from(makePdf([['Avery Example'], ['Lab assistant, plant ecology course']])) });
+  const preview = profile.getByRole('textbox', { name: 'Resume text preview' });
+  await expect(preview).toHaveValue(/Avery Example[\s\S]*Lab assistant, plant ecology course/);
+  await expect(profile.getByRole('alert')).toHaveCount(0);
+  await profile.getByRole('button', { name: 'Use this text as experience' }).click();
+  await profile.getByRole('button', { name: 'Save my starting point' }).click();
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('research-matchmaker-v1') || '{}'));
+  expect(stored.profile.experience).toContain('plant ecology');
+  expect(apiCalls).toEqual([]);
 });
