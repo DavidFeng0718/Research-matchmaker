@@ -50,13 +50,13 @@ Without a key, guided demo mode uses local rules and templates. It is useful for
 - Find faculty in the curated University of Minnesota Twin Cities sample catalog, or use live mode to search public sources for another university.
 - Read each professor's evidence, source links, and source-check or retrieval date. Research relevance does not imply an available position.
 - Draft, edit, copy, or download an outreach email. The app never sends email.
-- Import plain-text background information, save progress in the browser, and export or clear your workspace.
+- Import a resume from a PDF, `.txt`, or `.md` file, save progress in the browser, and export or clear your workspace.
 
 The starter catalog contains eight research directions and eight University of Minnesota Twin Cities faculty profiles. The guided demo's faculty coverage is intentionally limited to that sample catalog. Live search uses the requested school and selected research direction, verifies that candidate source URLs occurred in search evidence, and may return fewer than three results or no matches. Live results are labelled AI-sourced suggestions and still need a human source check. Recruitment status remains unknown. See [source notes](docs/sources.md) for catalog coverage and verification details.
 
 ## Data and privacy
 
-The browser retains your confirmed profile, conversation, plan, and draft so you can continue later. Clear the workspace to remove the saved session. Imported text becomes part of your profile only when you confirm it. Resume import supports `.txt` and `.md` files up to 100 KB with an editable confirmation preview. For PDF or Word resumes, paste the relevant text into the profile; direct PDF/Word parsing is not included in this version.
+The browser retains your confirmed profile, conversation, plan, and draft so you can continue later. Clear the workspace to remove the saved session. Imported text becomes part of your profile only when you confirm it. Resume import supports PDFs up to 5 MB (the first 10 pages are read) and `.txt` or `.md` files up to 100 KB, with an editable confirmation preview. PDFs are parsed in the browser with pdf.js; the file is never uploaded, and only the text you confirm joins your profile. Scanned, image-only PDFs have no selectable text and are not OCR'd. For those, or for Word resumes, save as a text-based PDF or paste the relevant text into the profile.
 
 Demo mode stays on your local app server. In live mode, the current conversation and profile are sent to OpenAI to generate a response. Faculty web searches receive only the school and public research topic, not the resume or conversation. The server does not put the API key in browser code, save student records in a database, or send messages to professors. Avoid adding personal information that is unnecessary for research exploration.
 
@@ -81,7 +81,7 @@ The tests cover the guided research flow, state changes, input validation, and b
 
 ## Project layout
 
-- `src/`: React interface and local workspace state.
+- `src/`: React interface and local workspace state. `src/resume/` reads imported resumes, including PDFs.
 - `server/`: Express API, guided engine, live agent, and curated catalog.
 - `shared/types.ts`: the shared request, response, and workspace contract.
 - `tests/`: automated checks.
